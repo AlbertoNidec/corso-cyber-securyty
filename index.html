@@ -210,6 +210,9 @@ main.wrap{padding-bottom:96px}
 mark{background:var(--c4t);color:var(--fg);border-bottom:3px solid var(--c4);padding:0 2px}
 details.idx summary{cursor:pointer;font-family:var(--font-d);font-weight:700;font-size:18px;min-height:44px;display:flex;align-items:center;gap:10px}
 .idxday a{color:var(--fg)}
+.idxday{border-left:5px solid transparent;padding:8px 10px;border-radius:8px}
+.idxday.done{background:var(--c3t);border-left-color:var(--c3)}
+.hit.done{background:var(--c3t)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .chips span{font-size:14px;padding:3px 10px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
 #ris{display:flex;flex-direction:column;gap:14px}
@@ -248,6 +251,12 @@ details summary{cursor:pointer;min-height:40px;display:flex;align-items:center;f
 #obtn{position:fixed;right:16px;bottom:152px;z-index:50;min-height:52px;padding:10px 22px;border-radius:28px;border:2px solid var(--bg);background:var(--c3);color:var(--bg);font-family:var(--font-d);font-weight:700;font-size:17px;box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:pointer}
 #wbtn{position:fixed;right:16px;bottom:220px;z-index:50;min-height:52px;padding:10px 22px;border-radius:28px;border:2px solid var(--bg);background:var(--c4);color:var(--bg);font-family:var(--font-d);font-weight:700;font-size:17px;box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:pointer}
 #obtn,#wbtn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#gbtn,#cbtn,#obtn,#wbtn{width:152px;min-height:52px;padding-left:0;padding-right:0;text-align:center;white-space:nowrap}
+/* ---- sfoglia i giorni ---- */
+.daynav{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.daynav .btn{min-height:44px}
+.daynav .btn[aria-disabled="true"]{visibility:hidden}
+.viewing{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--c1t);border:2px solid var(--c1);border-radius:12px;padding:12px 16px}
 main.wrap{padding-bottom:116px}
 
 /* ---- soluzioni degli esercizi ---- */
@@ -369,7 +378,7 @@ details.sol summary{font-size:18px}
   function shell(active, inner) {
     var due = dueAcr().length;
     var items = [['oggi', '#/', 'Oggi'], ['piano', '#/piano', 'Piano'], ['indice', '#/indice', 'Indice e ricerca'], ['materiale', '#/materiale', 'Materiale'],
-      ['acronimi', '#/acronimi', 'Acronimi'], ['comandi', '#/comandi', 'Comandi'], ['osi', '#/osi', 'ISO/OSI'], ['wireshark', '#/wireshark', 'Wireshark'], ['ripasso', '#/ripasso', 'Ripasso' + (due ? '<small>' + due + '</small>' : '')], ['altro', '#/altro', 'Altro']];
+      ['ripasso', '#/ripasso', 'Ripasso' + (due ? '<small>' + due + '</small>' : '')], ['altro', '#/altro', 'Altro']];
     var nav = '<nav class="nav" aria-label="Menu">' + items.map(function (it) {
       return '<a href="' + it[1] + '"' + (it[0] === active ? ' aria-current="page"' : '') + '>' + it[2] + '</a>';
     }).join('') + '</nav>';
@@ -390,7 +399,9 @@ details.sol summary{font-size:18px}
       h += '<section class="card ph p' + c.w.ph + '"><div class="row">' + tag(c.w.ph) + '<span class="meta">Giorno ' + c.n + ' di ' + TOTAL + ' · Settimana ' + c.w.n + '</span></div>' +
         '<h2>' + esc(c.les.subt ? c.les.subt.join(' · ') : c.les.t) + '</h2><p><b>' + kindOf(c) + '</b> · ' + esc(c.w.title) + ' · circa ' + minOf(c) + ' minuti</p>' +
         (c.les.heads.length ? '<ul class="list">' + c.les.heads.slice(0, 5).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '') +
-        '<div class="row"><a class="bigbtn" href="#/giorno/' + c.n + '">' + (n === 0 ? 'Inizia il giorno 1' : 'Apri il giorno ' + c.n) + '</a></div></section>';
+        '<div class="row"><a class="bigbtn" href="#/giorno/' + c.n + '">' + (n === 0 ? 'Inizia il giorno 1' : 'Apri il giorno ' + c.n) + '</a>' +
+        (c.n > 1 ? '<a class="bigbtn alt" href="#/giorno/' + (c.n - 1) + '">◀ Rivedi il giorno ' + (c.n - 1) + '</a>' : '') +
+        (c.n < TOTAL ? '<a class="bigbtn alt" href="#/giorno/' + (c.n + 1) + '">Sbircia il giorno ' + (c.n + 1) + ' ▶</a>' : '') + '</div></section>';
     } else {
       h += '<div class="okbox"><h2>Corso completato!</h2><p>Hai fatto tutti i ' + TOTAL + ' giorni. Il Furbo si è arreso. Usa il Ripasso per tenere vivi gli acronimi.</p></div>';
     }
@@ -478,7 +489,12 @@ details.sol summary{font-size:18px}
   function viewDay(n) {
     var d = DAYS[n - 1];
     if (!d) return '<h1>Giorno non trovato</h1><a class="bigbtn" href="#/piano">Vai al piano</a>';
-    var w = d.w, h = '';
+    var w = d.w, h = '', c = cur();
+    h += '<nav class="daynav" aria-label="Sfoglia i giorni">' +
+      '<a class="btn" href="#/giorno/' + (n - 1) + '"' + (n > 1 ? '' : ' aria-disabled="true" tabindex="-1"') + '>◀ Giorno ' + (n - 1) + '</a>' +
+      '<a class="btn" href="#/giorno/' + (n + 1) + '"' + (n < TOTAL ? '' : ' aria-disabled="true" tabindex="-1"') + '>Giorno ' + (n + 1) + ' ▶</a></nav>';
+    if (c && c.n !== n) h += '<div class="viewing"><span>Stai guardando il giorno ' + n + (S.days[n] ? ' (già fatto)' : ' (non ancora fatto)') + '. Il tuo punto nel corso resta il <b>giorno ' + c.n + '</b>.</span>' +
+      '<a class="btn" href="#/giorno/' + c.n + '">Torna al giorno ' + c.n + '</a></div>';
     h += '<section class="card ph p' + w.ph + '"><div class="row">' + tag(w.ph) + '<span class="meta">Giorno ' + n + ' di ' + TOTAL + ' · Settimana ' + w.n + ': ' + esc(w.title) + '</span></div>' +
       '<h1>' + esc(d.les.subt ? d.les.subt.join(' · ') : d.les.t) + '</h1><p><b>' + kindOf(d) + '</b> · circa ' + minOf(d) + ' minuti' + (/aborator/.test(kindOf(d)) ? ' · serve il PC' : '') + '</p>' +
       '<p class="meta" id="prog"></p><div class="row"><a class="btn" href="#quiz" data-act="toquiz">Vai al quiz</a></div></section>';
@@ -536,7 +552,7 @@ details.sol summary{font-size:18px}
         words.forEach(function (w) {
           snip = snip.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<mark>$1</mark>');
         });
-        h += '<a class="hit card ph p' + x.d.w.ph + '" href="#/giorno/' + x.d.n + '"><span class="meta">Giorno ' + x.d.n + ' · Settimana ' + x.d.w.n + ' · ' + x.d.kindShort + '</span><b>' + esc(x.d.les.subt ? x.d.les.subt.join(' · ') : x.d.les.t) + '</b><span>' + snip + '</span></a>';
+        h += '<a class="hit card ph p' + x.d.w.ph + (S.days[x.d.n] ? ' done' : '') + '" href="#/giorno/' + x.d.n + '"><span class="meta">Giorno ' + x.d.n + ' · Settimana ' + x.d.w.n + ' · ' + x.d.kindShort + (S.days[x.d.n] ? ' · <span class="st si">✔ fatto</span>' : '') + '</span><b>' + esc(x.d.les.subt ? x.d.les.subt.join(' · ') : x.d.les.t) + '</b><span>' + snip + '</span></a>';
       });
       h += '</div>';
     }
@@ -546,9 +562,12 @@ details.sol summary{font-size:18px}
   function indexHtml() {
     var h = '<p>Tutti gli argomenti del corso. Tocca un titolo per aprire il giorno. Scrivi sopra per cercare.</p>';
     W.forEach(function (w) {
-      h += '<details class="idx card ph p' + w.ph + '"><summary><span class="tag p' + w.ph + '"><i>' + SYM[w.ph] + '</i></span> Settimana ' + w.n + ': ' + esc(w.title) + '</summary><div class="stack">';
+      h += '<details class="idx card ph p' + w.ph + '"><summary><span class="tag p' + w.ph + '"><i>' + SYM[w.ph] + '</i></span> Settimana ' + w.n + ': ' + esc(w.title) + (function () {
+        var wd = DAYS.filter(function (d) { return d.w === w; }), k = wd.filter(function (d) { return S.days[d.n]; }).length;
+        return k ? ' <span class="st ' + (k === wd.length ? 'si' : 'pa') + '">' + (k === wd.length ? '✔ fatta' : k + ' di ' + wd.length) + '</span>' : '';
+      })() + '</summary><div class="stack">';
       DAYS.filter(function (d) { return d.w === w; }).forEach(function (d) {
-        h += '<div class="idxday"><a href="#/giorno/' + d.n + '"><b>G' + d.n + ' · ' + d.kindShort + ' · ' + esc(d.les.subt ? d.les.subt.join(' · ') : d.les.t) + '</b></a>' + (S.days[d.n] ? ' ✔' : '') +
+        h += '<div class="idxday' + (S.days[d.n] ? ' done' : '') + '"><a href="#/giorno/' + d.n + '"><b>G' + d.n + ' · ' + d.kindShort + ' · ' + esc(d.les.subt ? d.les.subt.join(' · ') : d.les.t) + '</b></a>' + (S.days[d.n] ? ' <span class="st si">✔ fatto</span>' : '') +
           (d.les.heads.length ? '<div class="chips">' + d.les.heads.map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('') + '</div>' : '') + '</div>';
       });
       h += '</div></details>';
@@ -742,9 +761,28 @@ details.sol summary{font-size:18px}
     var n = parseInt((curHash().split('/')[2]) || '0', 10), q = DAYS[n - 1] ? quizScore(n) : null;
     el.textContent = (all.length ? 'Caselle spuntate: ' + on + ' di ' + all.length : '') + (q ? ' · Quiz: ' + q.ans + ' di ' + q.tot + ' risposte' : '');
   }
+  /* posizione di lettura per ogni giorno: scroll e pannelli aperti */
+  var POSK = 'corso-cyber-pos-v1', pos = {}, lastKey = '';
+  try { pos = JSON.parse(sessionStorage.getItem(POSK)) || {}; } catch (er) { pos = {}; }
+  function remember() {
+    if (lastKey.indexOf('giorno/') < 0) return;
+    var op = [], all = app.querySelectorAll('details');
+    for (var i = 0; i < all.length; i++) if (all[i].open) op.push(i);
+    pos[lastKey] = { y: window.scrollY, op: op };
+    try { sessionStorage.setItem(POSK, JSON.stringify(pos)); } catch (er) { }
+  }
+  function restore(key) {
+    var s = pos[key]; if (!s) return;
+    var all = app.querySelectorAll('details');
+    (s.op || []).forEach(function (i) { if (all[i]) all[i].open = true; });
+    window.scrollTo(0, s.y || 0);
+  }
+  window.addEventListener('pagehide', remember);
   function route() {
-    var p = curHash().replace(/^#\/?/, '').split('/'), v = p[0] || 'oggi';
-    if (v === 'giorno') { var n = parseInt(p[1], 10); render('', viewDay(n), 'Giorno ' + n); updateProg(); }
+    remember();
+    var key = curHash().replace(/^#\/?/, ''); lastKey = key;
+    var p = key.split('/'), v = p[0] || 'oggi';
+    if (v === 'giorno') { var n = parseInt(p[1], 10); render('', viewDay(n), 'Giorno ' + n); restore(key); updateProg(); }
     else if (v === 'piano') render('piano', viewPlan(), 'Piano');
     else if (v === 'indice') { render('indice', viewIndex(), 'Indice e ricerca'); }
     else if (v === 'materiale') render('materiale', viewMat(), 'Materiale');
