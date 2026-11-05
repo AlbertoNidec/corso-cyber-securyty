@@ -140,6 +140,9 @@ body{font-size:var(--fs,19px)}
 .pill span{font-size:14px;line-height:1.3}
 .pill i{font-style:normal;font-family:var(--font-d);font-weight:700;font-size:15px;color:var(--pc)}
 .pill.done{background:var(--c3t);border-color:var(--c3)}
+.pill{position:relative}
+.pill.done i{color:var(--c3)}
+.pill.done::after{content:"✔";position:absolute;top:-10px;right:-8px;width:28px;height:28px;border-radius:50%;background:var(--c3);color:var(--bg);border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:700;font-size:15px;line-height:1}
 .pill.now{outline:4px solid var(--fg);outline-offset:2px}
 textarea{width:100%;min-height:120px;font:inherit;padding:12px 14px;border:2px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);resize:vertical}
 .bar{height:18px}
@@ -424,7 +427,10 @@ details.sol summary{font-size:18px}
   function viewPlan() {
     var c = cur(), h = '<h1>Piano del corso</h1><p>' + W.length + ' settimane, 5 giorni ciascuna (circa 45 minuti al giorno): lezioni, laboratori e un ripasso. ✔ fatto, ● oggi, ○ da fare, ★ quiz perfetto.</p>';
     W.forEach(function (w) {
-      h += '<section class="card ph p' + w.ph + '"><div class="row">' + tag(w.ph) + '<h3>Settimana ' + w.n + ' · ' + esc(w.title) + '</h3></div><p>' + esc(w.hook) + '</p><div class="pills">';
+      h += '<section class="card ph p' + w.ph + '"><div class="row">' + tag(w.ph) + '<h3>Settimana ' + w.n + ' · ' + esc(w.title) + '</h3>' + (function () {
+        var wd = DAYS.filter(function (d) { return d.w === w; }), k = wd.filter(function (d) { return S.days[d.n]; }).length;
+        return k ? '<span class="st ' + (k === wd.length ? 'si' : 'pa') + '">' + (k === wd.length ? '✔ fatta' : k + ' di ' + wd.length) + '</span>' : '';
+      })() + '</div><p>' + esc(w.hook) + '</p><div class="pills">';
       DAYS.filter(function (d) { return d.w === w; }).forEach(function (d) {
         var done = S.days[d.n], now = c && c.n === d.n, q = quizScore(d.n), st = q.ans === q.tot && q.ok === q.tot;
         h += '<a class="pill' + (done ? ' done' : '') + (now ? ' now' : '') + '" href="#/giorno/' + d.n + '" aria-label="Giorno ' + d.n + ', ' + esc(d.les.t) + ', ' + (done ? 'fatto' : now ? 'oggi' : 'da fare') + '">' +
