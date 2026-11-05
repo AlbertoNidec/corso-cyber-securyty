@@ -252,10 +252,6 @@ details summary{cursor:pointer;min-height:40px;display:flex;align-items:center;f
 #wbtn{position:fixed;right:16px;bottom:220px;z-index:50;min-height:52px;padding:10px 22px;border-radius:28px;border:2px solid var(--bg);background:var(--c4);color:var(--bg);font-family:var(--font-d);font-weight:700;font-size:17px;box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:pointer}
 #obtn,#wbtn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 #gbtn,#cbtn,#obtn,#wbtn{width:152px;min-height:52px;padding-left:0;padding-right:0;text-align:center;white-space:nowrap}
-/* ---- sfoglia i giorni ---- */
-.daynav{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.daynav .btn{min-height:44px}
-.daynav .btn[aria-disabled="true"]{visibility:hidden}
 .viewing{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--c1t);border:2px solid var(--c1);border-radius:12px;padding:12px 16px}
 main.wrap{padding-bottom:116px}
 
@@ -399,9 +395,7 @@ details.sol summary{font-size:18px}
       h += '<section class="card ph p' + c.w.ph + '"><div class="row">' + tag(c.w.ph) + '<span class="meta">Giorno ' + c.n + ' di ' + TOTAL + ' · Settimana ' + c.w.n + '</span></div>' +
         '<h2>' + esc(c.les.subt ? c.les.subt.join(' · ') : c.les.t) + '</h2><p><b>' + kindOf(c) + '</b> · ' + esc(c.w.title) + ' · circa ' + minOf(c) + ' minuti</p>' +
         (c.les.heads.length ? '<ul class="list">' + c.les.heads.slice(0, 5).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '') +
-        '<div class="row"><a class="bigbtn" href="#/giorno/' + c.n + '">' + (n === 0 ? 'Inizia il giorno 1' : 'Apri il giorno ' + c.n) + '</a>' +
-        (c.n > 1 ? '<a class="bigbtn alt" href="#/giorno/' + (c.n - 1) + '">◀ Rivedi il giorno ' + (c.n - 1) + '</a>' : '') +
-        (c.n < TOTAL ? '<a class="bigbtn alt" href="#/giorno/' + (c.n + 1) + '">Sbircia il giorno ' + (c.n + 1) + ' ▶</a>' : '') + '</div></section>';
+        '<div class="row"><a class="bigbtn" href="#/giorno/' + c.n + '">' + (n === 0 ? 'Inizia il giorno 1' : 'Apri il giorno ' + c.n) + '</a></div></section>';
     } else {
       h += '<div class="okbox"><h2>Corso completato!</h2><p>Hai fatto tutti i ' + TOTAL + ' giorni. Il Furbo si è arreso. Usa il Ripasso per tenere vivi gli acronimi.</p></div>';
     }
@@ -490,9 +484,6 @@ details.sol summary{font-size:18px}
     var d = DAYS[n - 1];
     if (!d) return '<h1>Giorno non trovato</h1><a class="bigbtn" href="#/piano">Vai al piano</a>';
     var w = d.w, h = '', c = cur();
-    h += '<nav class="daynav" aria-label="Sfoglia i giorni">' +
-      '<a class="btn" href="#/giorno/' + (n - 1) + '"' + (n > 1 ? '' : ' aria-disabled="true" tabindex="-1"') + '>◀ Giorno ' + (n - 1) + '</a>' +
-      '<a class="btn" href="#/giorno/' + (n + 1) + '"' + (n < TOTAL ? '' : ' aria-disabled="true" tabindex="-1"') + '>Giorno ' + (n + 1) + ' ▶</a></nav>';
     if (c && c.n !== n) h += '<div class="viewing"><span>Stai guardando il giorno ' + n + (S.days[n] ? ' (già fatto)' : ' (non ancora fatto)') + '. Il tuo punto nel corso resta il <b>giorno ' + c.n + '</b>.</span>' +
       '<a class="btn" href="#/giorno/' + c.n + '">Torna al giorno ' + c.n + '</a></div>';
     h += '<section class="card ph p' + w.ph + '"><div class="row">' + tag(w.ph) + '<span class="meta">Giorno ' + n + ' di ' + TOTAL + ' · Settimana ' + w.n + ': ' + esc(w.title) + '</span></div>' +
